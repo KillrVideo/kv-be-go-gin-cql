@@ -13,10 +13,10 @@ func main() {
 
 	// define DB connection
 	cfg := repo.AstraConfig{
-		AstraDBID: os.Getenv("ASTRA_DB_ID"),
-		Region:    "",
-		Token:     os.Getenv("ASTRA_DB_APPLICATION_TOKEN"),
-		Keyspace:  os.Getenv("ASTRA_DB_KEYSPACE"),
+		Token:    os.Getenv("ASTRA_DB_APPLICATION_TOKEN"),
+		Keyspace: os.Getenv("ASTRA_DB_KEYSPACE"),
+		ScbDir:   os.Getenv("ASTRA_DB_SCB_DIR"),
+		Hostname: os.Getenv("ASTRA_DB_HOSTNAME"),
 	}
 
 	session, err := repo.NewAstraSession(cfg)

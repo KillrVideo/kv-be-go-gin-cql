@@ -4,26 +4,27 @@ import (
 	"fmt"
 	"killrvideo/go-backend-astra-cql/models"
 
-	gocql "github.com/gocql/gocql"
+	apachegocql "github.com/apache/cassandra-gocql-driver/v2"
 )
 
 type VideoDAL struct {
-	DB *gocql.Session
+	DB *apachegocql.Session
 }
 
-func NewVideoDAL(session *gocql.Session) *VideoDAL {
+func NewVideoDAL(session *apachegocql.Session) *VideoDAL {
 	return &VideoDAL{
 		DB: session,
 	}
 }
 
-func (r *VideoDAL) GetVideo(id gocql.UUID) (*models.Video, error) {
+func (r *VideoDAL) GetVideo(id apachegocql.UUID) (*models.Video, error) {
 	video := &models.Video{Videoid: id}
+	//var vector []float32
 
 	err1 := r.DB.Query(
-		"SELECT userid, name, description, location, preview_image_location, added_date FROM videos WHERE videoid = ?",
+		"SELECT userid, name, description, location, preview_image_location, added_date, content_features FROM videos WHERE videoid = ?",
 		id,
-	).Scan(&video.Userid, &video.Name, &video.Description, &video.Location, &video.PreviewImageLocation, &video.AddedDate)
+	).Scan(&video.Userid, &video.Name, &video.Description, &video.Location, &video.PreviewImageLocation, &video.AddedDate, &video.ContentFeatures)
 
 	if err1 != nil {
 		return nil, fmt.Errorf("query has failed: %w", err1)

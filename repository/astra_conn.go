@@ -2,24 +2,44 @@ package repository
 
 import (
 	"fmt"
-	"time"
+	"path/filepath"
 
-	gocqlastra "github.com/datastax/gocql-astra"
-	gocql "github.com/gocql/gocql"
+	apachegocql "github.com/apache/cassandra-gocql-driver/v2"
 )
 
 type AstraConfig struct {
-	AstraDBID string
-	Region    string
-	Token     string
-	Keyspace  string
+	Token    string
+	Keyspace string
+	ScbDir   string
+	Hostname string
 }
 
-func NewAstraSession(cfg AstraConfig) (*gocql.Session, error) {
-	cluster, err1 := gocqlastra.NewClusterFromURL("https://api.astra.datastax.com", cfg.AstraDBID, cfg.Token, 10*time.Second)
+func NewAstraSession(cfg AstraConfig) (*apachegocql.Session, error) {
 
-	if err1 != nil {
-		return nil, fmt.Errorf("unable to connect to Astra cluster: %w", err1)
+	port := 29042
+	username := "token"
+	password := cfg.Token
+
+	caPath, _ := filepath.Abs(cfg.ScbDir + "ca.crt")
+	certPath, _ := filepath.Abs(cfg.ScbDir + "cert")
+	keyPath, _ := filepath.Abs(cfg.ScbDir + "key")
+
+	cluster := apachegocql.NewCluster(cfg.Hostname)
+	cluster.Port = port
+	cluster.Keyspace = cfg.Keyspace
+	cluster.ProtoVersion = 4
+
+	// security
+	cluster.Authenticator = &apachegocql.PasswordAuthenticator{
+		Username: username,
+		Password: password,
+	}
+
+	cluster.SslOpts = &apachegocql.SslOptions{
+		CertPath:               certPath,
+		KeyPath:                keyPath,
+		CaPath:                 caPath,
+		EnableHostVerification: false,
 	}
 
 	cluster.Keyspace = cfg.Keyspace
